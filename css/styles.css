@@ -87,6 +87,15 @@ p  { line-height: 1.78; color: var(--muted); }
 .btn-lg    { padding: 16px 36px; font-size: 1.02rem; }
 .btn-block { width: 100%; }
 
+/* ── Honeypot field (anti-spam) ── */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 /* ── Navbar ── */
 .navbar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 1000;

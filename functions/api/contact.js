@@ -9,6 +9,20 @@ export async function onRequestPost(context) {
 
     const formData = await request.formData();
 
+    const honeypot = sanitize(formData.get("companyWebsite"));
+    if (honeypot) {
+      // Pretend success for bots so they do not probe validation logic.
+      return json({ ok: true });
+    }
+
+    const ip = request.headers.get("cf-connecting-ip") || "unknown";
+    const rateLimitSeconds = parsePositiveInt(env.RATE_LIMIT_SECONDS, 30);
+    const rateLimitKey = new Request(`https://rate-limit.dovesdent.local/${encodeURIComponent(ip)}`);
+    const existingLock = await caches.default.match(rateLimitKey);
+    if (existingLock) {
+      return json({ ok: false, error: "Please wait a few seconds before sending another request." }, 429);
+    }
+
     const firstName = sanitize(formData.get("fname"));
     const lastName = sanitize(formData.get("lname"));
     const phone = sanitize(formData.get("phone"));
@@ -80,10 +94,25 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: "Email send failed.", details }, 502);
     }
 
+    await caches.default.put(
+      rateLimitKey,
+      new Response("sent", {
+        headers: {
+          "cache-control": `max-age=${rateLimitSeconds}`
+        }
+      })
+    );
+
     return json({ ok: true });
   } catch (error) {
     return json({ ok: false, error: "Unexpected server error." }, 500);
   }
+}
+
+function parsePositiveInt(value, fallback) {
+  const n = Number.parseInt(String(value || ""), 10);
+  if (!Number.isFinite(n) || n <= 0) return fallback;
+  return n;
 }
 
 function sanitize(value) {

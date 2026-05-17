@@ -24,10 +24,13 @@ This project includes a Pages Function at `functions/api/contact.js`.
 
 ### Optional environment variable
 - `FROM_EMAIL`: sender address used by MailChannels (default: `no-reply@dovesdent.com`)
+- `RATE_LIMIT_SECONDS`: seconds to throttle repeat submissions from same IP (default: `30`)
 
 ### How it works
 - `index.html` and `contact.html` post to `/api/contact`.
 - The function forwards submissions through MailChannels from Cloudflare and sends to `CONTACT_EMAIL`.
+- A honeypot field silently drops bot submissions.
+- Simple IP throttling reduces duplicate spam bursts.
 
 ### Cloudflare setup steps
 1. In Pages project settings, add `CONTACT_EMAIL` (and optionally `FROM_EMAIL`) under Environment Variables.
