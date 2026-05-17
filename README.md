@@ -15,3 +15,21 @@ Marketing website for DovesDent paintless dent repair services.
 
 ## Local Preview
 Open `index.html` in a browser, or serve the folder with any static file server.
+
+## Contact Form Delivery (Cloudflare Pages Free Tier)
+This project includes a Pages Function at `functions/api/contact.js`.
+
+### Required Cloudflare environment variable
+- `CONTACT_EMAIL`: your destination inbox (for example your Gmail address)
+
+### Optional environment variable
+- `FROM_EMAIL`: sender address used by MailChannels (default: `no-reply@dovesdent.com`)
+
+### How it works
+- `index.html` and `contact.html` post to `/api/contact`.
+- The function forwards submissions through MailChannels from Cloudflare and sends to `CONTACT_EMAIL`.
+
+### Cloudflare setup steps
+1. In Pages project settings, add `CONTACT_EMAIL` (and optionally `FROM_EMAIL`) under Environment Variables.
+2. Deploy the latest commit.
+3. Submit a test form on the live site and confirm it arrives in Gmail (and check Spam once).

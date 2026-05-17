@@ -58,14 +58,40 @@ document.body.appendChild(bar);
 // ── Contact form feedback ──
 const form = document.getElementById("contactForm");
 if (form) {
-  form.addEventListener("submit", e => {
+  form.addEventListener("submit", async e => {
     e.preventDefault();
     const btn = form.querySelector(".btn-submit");
     if (!btn) return;
-    btn.textContent = "Request Sent! Aaron will call within 1 hour.";
-    btn.style.background = "#15803d";
-    btn.style.borderColor = "#15803d";
+
+    const originalText = btn.textContent;
+    btn.textContent = "Sending...";
     btn.disabled = true;
+
+    try {
+      const response = await fetch(form.action || "/api/contact", {
+        method: "POST",
+        body: new FormData(form)
+      });
+
+      if (!response.ok) {
+        throw new Error("Request failed");
+      }
+
+      btn.textContent = "Request Sent! Aaron will call within 1 hour.";
+      btn.style.background = "#15803d";
+      btn.style.borderColor = "#15803d";
+      form.reset();
+    } catch (err) {
+      btn.textContent = "Could not send. Please call 806-438-8209.";
+      btn.style.background = "#b91c1c";
+      btn.style.borderColor = "#b91c1c";
+      btn.disabled = false;
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = "";
+        btn.style.borderColor = "";
+      }, 4500);
+    }
   });
 }
 
