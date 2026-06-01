@@ -36,3 +36,51 @@ This project includes a Pages Function at `functions/api/contact.js`.
 1. In Pages project settings, add `CONTACT_EMAIL` (and optionally `FROM_EMAIL`) under Environment Variables.
 2. Deploy the latest commit.
 3. Submit a test form on the live site and confirm it arrives in Gmail (and check Spam once).
+
+## Admin Dashboard (No-Code Content Updates)
+
+This repo now includes an owner dashboard at `admin.html`.
+
+What it does:
+- Google sign-in for owner access.
+- Firestore-backed content storage.
+- Public pages (`index.html`, `services.html`, `faq.html`, `contact.html`) read content from Firestore and apply updates without code edits.
+
+### Files added
+- `admin.html`
+- `css/admin.css`
+- `js/admin.js`
+- `js/site-content.js`
+- `js/firebase-config.js`
+
+### Firebase setup
+1. Create a Firebase project.
+2. Enable Authentication -> Sign-in method -> Google.
+3. Create a Firestore database (production mode recommended).
+4. Open `js/firebase-config.js` and replace all `REPLACE_ME` values.
+5. In `js/firebase-config.js`, set `ADMIN_EMAILS` to the owner Google account(s).
+6. Deploy the site.
+
+### Recommended Firestore security rules
+
+```txt
+rules_version = '2';
+service cloud.firestore {
+	match /databases/{database}/documents {
+		match /site/content {
+			allow read: if true;
+			allow write: if request.auth != null
+				&& request.auth.token.email in ["owner@example.com"];
+		}
+	}
+}
+```
+
+Replace `owner@example.com` with your real owner login(s).
+
+### Cloudflare Auth vs Firebase Auth
+
+- Cloudflare can protect routes (for example with Cloudflare Access / Zero Trust) and is excellent as an edge gate.
+- You still need an authenticated identity + data-layer permissions for in-browser content editing.
+- For this implementation, Firebase Auth + Firestore is the most direct option because it handles both login and document-level write access in one stack.
+- Optional hardening: keep Firebase Auth as primary app auth, and also put `admin.html` behind Cloudflare Access.

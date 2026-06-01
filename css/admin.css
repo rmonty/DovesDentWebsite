@@ -1,0 +1,130 @@
+.admin-body {
+  background: radial-gradient(circle at 0% 0%, #fff4d6 0%, #f8f9fb 45%, #eef2f7 100%);
+  min-height: 100vh;
+}
+
+.admin-wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 20px 64px;
+}
+
+.admin-auth,
+.admin-panel {
+  background: #ffffff;
+  border: 1px solid #d4dae5;
+  border-radius: 16px;
+  box-shadow: 0 14px 38px rgba(27, 40, 71, 0.08);
+  padding: 28px;
+}
+
+.admin-auth {
+  max-width: 540px;
+  margin: 10vh auto 0;
+  text-align: center;
+}
+
+.admin-auth h1 {
+  margin-bottom: 12px;
+}
+
+.admin-note {
+  margin-top: 14px;
+  color: #596273;
+}
+
+.hidden {
+  display: none;
+}
+
+.admin-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.admin-grid fieldset {
+  border: 1px solid #dde3ee;
+  border-radius: 12px;
+  padding: 14px;
+  background: #fbfcff;
+}
+
+.admin-grid legend {
+  padding: 0 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  color: #1b2847;
+}
+
+.admin-grid label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.92rem;
+  margin-top: 10px;
+  color: #27344f;
+}
+
+.admin-grid input,
+.admin-grid textarea {
+  width: 100%;
+  margin-top: 6px;
+  border: 1px solid #cfd7e6;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.95rem;
+  color: #1f2937;
+  background: #fff;
+}
+
+.admin-grid input:focus,
+.admin-grid textarea:focus {
+  outline: none;
+  border-color: #c6a25a;
+  box-shadow: 0 0 0 3px rgba(198, 162, 90, 0.2);
+}
+
+.admin-savebar {
+  position: sticky;
+  bottom: 14px;
+  margin-top: 16px;
+  background: #ffffff;
+  border: 1px solid #d4dae5;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#saveStatus {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .admin-wrap {
+    padding: 20px 12px 48px;
+  }
+
+  .admin-auth,
+  .admin-panel {
+    padding: 18px;
+  }
+}
