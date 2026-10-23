@@ -33,7 +33,7 @@
 
 .photo-upload input[type="file"]:hover,
 .photo-upload input[type="file"]:focus {
-  border-color: var(--gold);
+  border-color: var(--accent);
   background: #fffdf8;
   outline: none;
 }

@@ -69,7 +69,7 @@
   padding: 0 8px;
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
-  color: #1b2847;
+  color: #002050;
 }
 
 .admin-grid label {
@@ -96,8 +96,8 @@
 .admin-grid input:focus,
 .admin-grid textarea:focus {
   outline: none;
-  border-color: #c6a25a;
-  box-shadow: 0 0 0 3px rgba(198, 162, 90, 0.2);
+  border-color: #14548c;
+  box-shadow: 0 0 0 3px rgba(20, 84, 140, 0.2);
 }
 
 .admin-savebar {
@@ -161,7 +161,7 @@
 .submission-header strong {
   font-family: "Montserrat", sans-serif;
   font-size: 1.02rem;
-  color: #1b2847;
+  color: #002050;
 }
 
 .submission-date {
@@ -179,7 +179,7 @@
 }
 
 .submission-meta a {
-  color: #1b2847;
+  color: #002050;
   text-decoration: underline;
 }
 

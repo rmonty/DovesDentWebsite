@@ -66,7 +66,7 @@ document.body.appendChild(bar);
 const currentPage = window.location.pathname.split("/").pop() || "index.html";
 document.querySelectorAll(".nav-links a").forEach((a) => {
   if (a.getAttribute("href") === currentPage) {
-    a.style.color = "var(--gold)";
+    a.style.color = "var(--accent)";
   }
 });
 
