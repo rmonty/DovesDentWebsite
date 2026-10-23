@@ -17,6 +17,9 @@ const signedInAs = document.getElementById("signedInAs");
 const saveBtn = document.getElementById("saveBtn");
 const saveStatus = document.getElementById("saveStatus");
 const form = document.getElementById("contentForm");
+const submissionList = document.getElementById("submissionList");
+const submissionStatus = document.getElementById("submissionStatus");
+const refreshSubmissionsBtn = document.getElementById("refreshSubmissionsBtn");
 
 const defaults = {
   common: {
@@ -88,6 +91,94 @@ function setDeep(obj, path, value) {
 
 function getDeep(obj, path) {
   return path.split(".").reduce((acc, key) => (acc ? acc[key] : undefined), obj);
+}
+
+function escapeHtml(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatDate(iso) {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString();
+}
+
+function renderSubmissions(submissions) {
+  if (!submissionList) return;
+
+  if (!Array.isArray(submissions) || submissions.length === 0) {
+    submissionList.innerHTML = '<p class="submission-empty">No inspection requests yet.</p>';
+    return;
+  }
+
+  submissionList.innerHTML = submissions
+    .map((item) => {
+      const photos = (item.images || [])
+        .map(
+          (image) =>
+            `<a href="${escapeHtml(image.url)}" target="_blank" rel="noopener"><img src="${escapeHtml(image.url)}" alt="Damage photo" loading="lazy"></a>`
+        )
+        .join("");
+
+      const phoneDigits = String(item.phone || "").replace(/[^\d+]/g, "");
+
+      return `<article class="submission-card">
+        <div class="submission-header">
+          <strong>${escapeHtml(item.name || "Unknown")}</strong>
+          <span class="submission-date">${escapeHtml(formatDate(item.createdAt))}</span>
+        </div>
+        <dl class="submission-meta">
+          <div><strong>Phone:</strong> ${item.phone ? `<a href="tel:${escapeHtml(phoneDigits)}">${escapeHtml(item.phone)}</a>` : "&mdash;"}</div>
+          <div><strong>Email:</strong> ${item.email ? `<a href="mailto:${escapeHtml(item.email)}">${escapeHtml(item.email)}</a>` : "&mdash;"}</div>
+          <div><strong>Vehicle:</strong> ${escapeHtml(item.vehicle || "&mdash;")}</div>
+          <div><strong>Damage:</strong> ${escapeHtml(item.damage || "&mdash;")}</div>
+          <div><strong>Insurance:</strong> ${escapeHtml(item.insured || "&mdash;")}</div>
+          <div><strong>Preferred:</strong> ${escapeHtml(item.preferred || "&mdash;")}</div>
+        </dl>
+        ${item.notes ? `<p class="submission-notes">${escapeHtml(item.notes)}</p>` : ""}
+        ${photos ? `<div class="submission-photos">${photos}</div>` : ""}
+      </article>`;
+    })
+    .join("");
+}
+
+async function loadSubmissions() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  if (submissionStatus) {
+    submissionStatus.style.color = "";
+    submissionStatus.textContent = "Loading requests...";
+  }
+
+  try {
+    const token = await user.getIdToken();
+    const response = await fetch("/api/submissions", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) {
+      throw new Error(data.error || "Could not load requests.");
+    }
+
+    renderSubmissions(data.submissions);
+    if (submissionStatus) submissionStatus.textContent = "";
+  } catch (err) {
+    if (submissionStatus) {
+      submissionStatus.style.color = "#b91c1c";
+      submissionStatus.textContent = err.message || "Could not load requests.";
+    }
+  }
+}
+
+if (refreshSubmissionsBtn) {
+  refreshSubmissionsBtn.addEventListener("click", () => loadSubmissions());
 }
 
 function populateForm(data) {
@@ -194,4 +285,6 @@ onAuthStateChanged(auth, async (user) => {
     populateForm(defaults);
     console.error(err);
   }
+
+  loadSubmissions();
 });

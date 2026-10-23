@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/upload.css">
   <link rel="icon" href="images/favicon.png" type="image/png">
   
 </head>
@@ -157,11 +158,19 @@
             <label for="notes">Additional Notes</label>
             <textarea id="notes" name="notes" placeholder="Any extra details about the damage, your location, or anything else we should know..."></textarea>
           </div>
+          <div class="form-group photo-upload">
+            <label for="photoInput">Photos of the damage <span class="photo-optional">(optional)</span></label>
+            <p class="photo-hint" id="photoHint">Add up to 8 photos. Clear, well-lit shots of the damage help us estimate faster.</p>
+            <input type="file" id="photoInput" accept="image/*" multiple>
+            <div class="photo-preview" id="photoPreview"></div>
+            <div class="upload-status" id="uploadStatus" role="status" aria-live="polite"></div>
+          </div>
+          <input type="hidden" name="imageKeys" id="imageKeys" value="[]">
           <label class="hp-field" aria-hidden="true">Leave this field empty
             <input type="text" name="companyWebsite" tabindex="-1" autocomplete="off">
           </label>
           <button type="submit" class="btn btn-gold btn-lg btn-block btn-submit">Schedule My Free Inspection</button>
-          <p class="form-note">By submitting you agree to be contacted by Doves Dent Hail Repair at the number or email provided. We never share your information.</p>
+          <p class="form-note">By submitting you agree to be contacted by Doves Dent Hail Repair at the number or email provided. Photos you add are used only to prepare your estimate and are kept privately for up to 90 days. We never share your information.</p>
         </form>
       </div>
     </div>

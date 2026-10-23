@@ -128,3 +128,93 @@
     padding: 18px;
   }
 }
+
+/* ── Inspection request gallery ── */
+
+.admin-submissions {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #dde3ee;
+}
+
+.submission-list {
+  display: grid;
+  gap: 14px;
+}
+
+.submission-card {
+  border: 1px solid #dde3ee;
+  border-radius: 12px;
+  background: #fbfcff;
+  padding: 16px;
+}
+
+.submission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.submission-header strong {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.02rem;
+  color: #1b2847;
+}
+
+.submission-date {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.submission-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 6px 16px;
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: #27344f;
+}
+
+.submission-meta a {
+  color: #1b2847;
+  text-decoration: underline;
+}
+
+.submission-notes {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: #4b5563;
+  white-space: pre-wrap;
+}
+
+.submission-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.submission-photos a {
+  display: block;
+  width: 104px;
+  height: 104px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #dde3ee;
+  background: #eef2f7;
+}
+
+.submission-photos img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.submission-empty {
+  color: #6b7280;
+  font-size: 0.92rem;
+}
+

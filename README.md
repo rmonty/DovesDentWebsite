@@ -84,3 +84,28 @@ Replace `owner@example.com` with your real owner login(s).
 - You still need an authenticated identity + data-layer permissions for in-browser content editing.
 - For this implementation, Firebase Auth + Firestore is the most direct option because it handles both login and document-level write access in one stack.
 - Optional hardening: keep Firebase Auth as primary app auth, and also put `admin.html` behind Cloudflare Access.
+
+## Photo Uploads for Estimates
+
+Customers can optionally attach up to 8 photos to an inspection request. Photos
+are compressed in the browser, stored privately in **Cloudflare R2**, and linked
+from the owner email and the admin dashboard. Images are served only through
+signed, expiring links.
+
+### Files added
+- `functions/api/upload.js` — accepts and validates a single photo, stores it in R2
+- `functions/api/image.js` — serves a photo given a valid signed link
+- `functions/api/submissions.js` — admin-only list of recent requests
+- `js/main.js` — photo selection, compression, upload, and form submission
+- `css/upload.css` — upload UI styles
+- `SETUP.md` — required R2 bucket, KV namespace, bindings, and environment variables
+
+### Quick start
+1. Create an R2 bucket and a KV namespace in Cloudflare.
+2. Bind them to the Pages project as `UPLOADS` and `SUBMISSIONS`.
+3. Add the environment variables listed in [SETUP.md](SETUP.md), including the
+   `IMAGE_SIGNING_KEY` secret, `FIREBASE_PROJECT_ID`, and `ADMIN_EMAILS`.
+4. Deploy and submit a test request with a photo.
+
+See [SETUP.md](SETUP.md) for full instructions and troubleshooting.
+
