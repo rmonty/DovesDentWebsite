@@ -23,12 +23,12 @@ This project includes a Pages Function at `functions/api/contact.js`.
 - `CONTACT_EMAIL`: your destination inbox (for example your Gmail address)
 
 ### Optional environment variable
-- `FROM_EMAIL`: sender address used by MailChannels (default: `no-reply@dovesdent.com`)
+- `FROM_EMAIL`: sender address (default: `no-reply@doveshailandcollisionrepair.com`); the domain must be onboarded to Cloudflare Email Sending
 - `RATE_LIMIT_SECONDS`: seconds to throttle repeat submissions from same IP (default: `30`)
 
 ### How it works
 - `index.html` and `contact.html` post to `/api/contact`.
-- The function forwards submissions through MailChannels from Cloudflare and sends to `CONTACT_EMAIL`.
+- The function saves each submission to KV, then emails `CONTACT_EMAIL` through Cloudflare Email Service. Pages Functions cannot hold a `send_email` binding, so the send happens in the private `dovesdent-mailer` Worker (`mailer-worker/`, deploy with `npx wrangler deploy` from that folder), reached through the `MAILER` service binding on the Pages project.
 - A honeypot field silently drops bot submissions.
 - Simple IP throttling reduces duplicate spam bursts.
 

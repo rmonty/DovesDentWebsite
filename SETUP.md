@@ -65,7 +65,7 @@ Add the same bindings for the **Production** and **Preview** environments.
 | Variable                  | Type   | Required | Default | Purpose |
 | ------------------------- | ------ | -------- | ------- | ------- |
 | `CONTACT_EMAIL`           | text   | yes      | —       | Where requests are emailed |
-| `FROM_EMAIL`              | text   | no       | `no-reply@dovesdent.com` | MailChannels sender |
+| `FROM_EMAIL`              | text   | no       | `no-reply@doveshailandcollisionrepair.com` | Sender (Cloudflare Email Service) |
 | `RATE_LIMIT_SECONDS`      | text   | no       | `30`    | Contact-form throttle |
 | `UPLOAD_MAX_FILES`        | text   | no       | `8`     | Max photos per submission |
 | `UPLOAD_MAX_BYTES`        | text   | no       | `8388608` (8 MB) | Max size per stored photo |

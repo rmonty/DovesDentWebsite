@@ -2,7 +2,9 @@
  * POST /api/contact
  *
  * Receives the inspection-request form, validates it, stores the submission in
- * KV (for the owner dashboard), and emails it through MailChannels.
+ * KV (for the owner dashboard) before attempting to email it through
+ * the private dovesdent-mailer Worker (Cloudflare Email Service), so a request
+ * is kept even if email delivery fails.
  *
  * Photos are uploaded separately to R2 via /api/upload; the form carries their
  * object keys as JSON in the "imageKeys" field. Each key is checked against a
@@ -57,7 +59,7 @@ export async function onRequestPost(context) {
       return json({ ok: false, error: "Server is missing CONTACT_EMAIL." }, 500);
     }
 
-    const fromEmail = env.FROM_EMAIL || "no-reply@dovesdent.com";
+    const fromEmail = env.FROM_EMAIL || "no-reply@doveshailandcollisionrepair.com";
     const sourcePage = request.headers.get("referer") || "Unknown";
     const origin = new URL(request.url).origin;
 
@@ -88,40 +90,17 @@ export async function onRequestPost(context) {
     }
 
     const mailPayload = {
-      personalizations: [
-        {
-          to: [{ email: toEmail }],
-          subject
-        }
-      ],
-      from: {
-        email: fromEmail,
-        name: "Doves Dent Website"
-      },
-      reply_to: email ? { email } : { email: fromEmail },
-      content: [
-        {
-          type: "text/plain",
-          value: lines.join("\n")
-        }
-      ]
+      from: { email: fromEmail, name: "Doves Dent Website" },
+      to: toEmail,
+      subject,
+      text: lines.join("\n")
     };
+    if (email) mailPayload.replyTo = { email, name: `${firstName} ${lastName}` };
 
-    const mailResponse = await fetch("https://api.mailchannels.net/tx/v1/send", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json"
-      },
-      body: JSON.stringify(mailPayload)
-    });
-
-    if (!mailResponse.ok) {
-      const details = await mailResponse.text();
-      return json({ ok: false, error: "Email send failed.", details }, 502);
-    }
-
+    // Save first so a request is never lost when email delivery is down.
+    let stored = false;
     try {
-      await storeSubmission(env, {
+      stored = await storeSubmission(env, {
         firstName,
         lastName,
         phone,
@@ -135,8 +114,30 @@ export async function onRequestPost(context) {
         imageKeys
       });
     } catch (error) {
-      // The email already went out; a storage failure should not fail the request.
       console.error("submission store failed", error);
+    }
+
+    let emailed = false;
+    try {
+      if (!env.MAILER) throw new Error("MAILER service binding is not configured");
+      const mailResponse = await env.MAILER.fetch("https://mailer.internal/send", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(mailPayload)
+      });
+      emailed = mailResponse.ok;
+      if (!emailed) {
+        console.error("email send failed", mailResponse.status, await mailResponse.text());
+      }
+    } catch (error) {
+      console.error("email send failed", error);
+    }
+
+    // Only fail the visitor's request if the submission went nowhere at all.
+    if (!stored && !emailed) {
+      return json({ ok: false, error: "We could not send your request. Please call 806-438-8209." }, 502);
     }
 
     await caches.default.put(
@@ -194,7 +195,7 @@ async function signImageLinks(keys, env, origin) {
 }
 
 async function storeSubmission(env, data) {
-  if (!env.SUBMISSIONS) return;
+  if (!env.SUBMISSIONS) return false;
 
   const now = new Date();
   const id = `${now.toISOString()}-${crypto.randomUUID()}`;
@@ -218,6 +219,7 @@ async function storeSubmission(env, data) {
   await env.SUBMISSIONS.put(`submissions/${id}`, JSON.stringify(record), {
     expirationTtl: Math.max(60, ttl)
   });
+  return true;
 }
 
 async function hmacHex(secret, message) {

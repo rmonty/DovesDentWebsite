@@ -1,0 +1,11 @@
+{
+  // Private mail relay for the Pages site. Pages Functions cannot hold a
+  // send_email binding, so /api/contact calls this Worker through a service
+  // binding (MAILER). It has no public route.
+  "name": "dovesdent-mailer",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "send_email": [{ "name": "EMAIL" }]
+}
