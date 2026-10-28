@@ -52,10 +52,84 @@
   flex-wrap: wrap;
 }
 
+[hidden] {
+  display: none !important;
+}
+
+/* ── Tabs ── */
+
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid #dde3ee;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+
+.admin-tab {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  padding: 12px 18px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #596273;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-tab:hover {
+  color: #002050;
+}
+
+.admin-tab[aria-selected="true"] {
+  color: #002050;
+  border-bottom-color: #14548c;
+}
+
+.admin-count {
+  display: inline-block;
+  min-width: 22px;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #14548c;
+  color: #fff;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.admin-subtabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.admin-subtab {
+  appearance: none;
+  border: 1px solid #cfd7e6;
+  background: #fff;
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #27344f;
+  cursor: pointer;
+}
+
+.admin-subtab[aria-selected="true"] {
+  background: #002050;
+  border-color: #002050;
+  color: #fff;
+}
+
 .admin-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 16px;
+  display: block;
 }
 
 .admin-grid fieldset {
@@ -63,6 +137,13 @@
   border-radius: 12px;
   padding: 14px;
   background: #fbfcff;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  column-gap: 16px;
+}
+
+.admin-grid fieldset > legend {
+  grid-column: 1 / -1;
 }
 
 .admin-grid legend {
@@ -146,16 +227,39 @@
   border: 1px solid #dde3ee;
   border-radius: 12px;
   background: #fbfcff;
-  padding: 16px;
+  padding: 0 16px;
+}
+
+.submission-card[open] {
+  padding-bottom: 16px;
+  border-color: #14548c;
 }
 
 .submission-header {
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
-  gap: 12px;
+  gap: 4px 14px;
   flex-wrap: wrap;
-  margin-bottom: 8px;
+  padding: 14px 0;
+  cursor: pointer;
+}
+
+.submission-summary {
+  color: #4b5563;
+  font-size: 0.88rem;
+}
+
+.submission-badge {
+  background: #eef2f7;
+  color: #002050;
+  border-radius: 999px;
+  padding: 1px 9px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.submission-date {
+  margin-left: auto;
 }
 
 .submission-header strong {

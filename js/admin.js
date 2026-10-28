@@ -21,6 +21,34 @@ const submissionList = document.getElementById("submissionList");
 const submissionStatus = document.getElementById("submissionStatus");
 const refreshSubmissionsBtn = document.getElementById("refreshSubmissionsBtn");
 
+const requestCount = document.getElementById("requestCount");
+
+// Show one panel of a tab group at a time (main sections and content pages).
+function setupTabs(group) {
+  const tabs = [...document.querySelectorAll(`[data-tab-group="${group}"] [role="tab"]`)];
+  const select = (selected) => {
+    tabs.forEach((tab) => {
+      const on = tab === selected;
+      tab.setAttribute("aria-selected", String(on));
+      tab.tabIndex = on ? 0 : -1;
+      document.getElementById(tab.getAttribute("aria-controls")).hidden = !on;
+    });
+  };
+  tabs.forEach((tab, i) => {
+    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("keydown", (event) => {
+      const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+      if (!step) return;
+      const next = tabs[(i + step + tabs.length) % tabs.length];
+      select(next);
+      next.focus();
+    });
+  });
+  select(tabs[0]);
+}
+setupTabs("main");
+setupTabs("content");
+
 const defaults = {
   common: {
     businessName: "Doves Dent Hail Repair",
@@ -112,13 +140,19 @@ function formatDate(iso) {
 function renderSubmissions(submissions) {
   if (!submissionList) return;
 
-  if (!Array.isArray(submissions) || submissions.length === 0) {
+  const total = Array.isArray(submissions) ? submissions.length : 0;
+  if (requestCount) {
+    requestCount.textContent = String(total);
+    requestCount.hidden = total === 0;
+  }
+
+  if (total === 0) {
     submissionList.innerHTML = '<p class="submission-empty">No inspection requests yet.</p>';
     return;
   }
 
   submissionList.innerHTML = submissions
-    .map((item) => {
+    .map((item, index) => {
       const photos = (item.images || [])
         .map(
           (image) =>
@@ -128,11 +162,18 @@ function renderSubmissions(submissions) {
 
       const phoneDigits = String(item.phone || "").replace(/[^\d+]/g, "");
 
-      return `<article class="submission-card">
-        <div class="submission-header">
+      const photoCount = (item.images || []).length;
+      const photoBadge = photoCount
+        ? `<span class="submission-badge">${photoCount} photo${photoCount === 1 ? "" : "s"}</span>`
+        : "";
+
+      return `<details class="submission-card"${index === 0 ? " open" : ""}>
+        <summary class="submission-header">
           <strong>${escapeHtml(item.name || "Unknown")}</strong>
+          <span class="submission-summary">${escapeHtml(item.damage || "")}</span>
+          ${photoBadge}
           <span class="submission-date">${escapeHtml(formatDate(item.createdAt))}</span>
-        </div>
+        </summary>
         <dl class="submission-meta">
           <div><strong>Phone:</strong> ${item.phone ? `<a href="tel:${escapeHtml(phoneDigits)}">${escapeHtml(item.phone)}</a>` : "&mdash;"}</div>
           <div><strong>Email:</strong> ${item.email ? `<a href="mailto:${escapeHtml(item.email)}">${escapeHtml(item.email)}</a>` : "&mdash;"}</div>
@@ -143,7 +184,7 @@ function renderSubmissions(submissions) {
         </dl>
         ${item.notes ? `<p class="submission-notes">${escapeHtml(item.notes)}</p>` : ""}
         ${photos ? `<div class="submission-photos">${photos}</div>` : ""}
-      </article>`;
+      </details>`;
     })
     .join("");
 }

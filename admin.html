@@ -15,7 +15,7 @@
   <main class="admin-wrap">
     <section class="admin-auth" id="authCard">
       <h1>Owner Dashboard</h1>
-      <p>Sign in with Google to edit website content without code changes.</p>
+      <p>Sign in with Google to view requests and edit website content without code changes.</p>
       <button id="signInBtn" class="btn btn-gold">Sign In With Google</button>
       <p class="admin-note">Only approved owner accounts can access this dashboard.</p>
     </section>
@@ -23,7 +23,7 @@
     <section class="admin-panel hidden" id="adminPanel">
       <div class="admin-topbar">
         <div>
-          <h2>Site Content Editor</h2>
+          <h2>Owner Dashboard</h2>
           <p id="signedInAs"></p>
         </div>
         <div class="admin-actions">
@@ -32,74 +32,88 @@
         </div>
       </div>
 
-      <form id="contentForm" class="admin-grid">
-        <fieldset>
-          <legend>Common</legend>
-          <label>Business Name<input name="common.businessName" type="text"></label>
-          <label>Owner Label<input name="common.ownerLabel" type="text" placeholder="Aaron Dove - Owner / Estimator"></label>
-          <label>Phone Display<input name="common.phoneDisplay" type="text" placeholder="806-438-8209"></label>
-          <label>Email<input name="common.email" type="email"></label>
-          <label>Nav Book Button<input name="common.navBookLabel" type="text"></label>
-          <label>Footer Tagline<textarea name="common.footerTagline" rows="3"></textarea></label>
-        </fieldset>
-
-        <fieldset>
-          <legend>Home</legend>
-          <label>Hero Badge<input name="home.heroBadge" type="text"></label>
-          <label>Hero Title Top<input name="home.heroTitleTop" type="text"></label>
-          <label>Hero Title Accent<input name="home.heroTitleAccent" type="text"></label>
-          <label>Hero Subtitle<textarea name="home.heroSubtitle" rows="3"></textarea></label>
-          <label>Hero Primary CTA<input name="home.heroPrimaryCta" type="text"></label>
-          <label>Hero Secondary CTA<input name="home.heroSecondaryCta" type="text"></label>
-          <label>Service 1 Title<input name="home.service1Title" type="text"></label>
-          <label>Service 1 Body<textarea name="home.service1Body" rows="3"></textarea></label>
-          <label>Service 2 Title<input name="home.service2Title" type="text"></label>
-          <label>Service 2 Body<textarea name="home.service2Body" rows="3"></textarea></label>
-          <label>Service 3 Title<input name="home.service3Title" type="text"></label>
-          <label>Service 3 Body<textarea name="home.service3Body" rows="3"></textarea></label>
-          <label>CTA Title<input name="home.ctaTitle" type="text"></label>
-          <label>CTA Body<textarea name="home.ctaBody" rows="3"></textarea></label>
-          <label>CTA Primary<input name="home.ctaPrimary" type="text"></label>
-          <label>CTA Secondary<input name="home.ctaSecondary" type="text"></label>
-        </fieldset>
-
-        <fieldset>
-          <legend>Services</legend>
-          <label>Hero Subtitle<textarea name="services.heroSubtitle" rows="3"></textarea></label>
-          <label>Hail Intro Paragraph<textarea name="services.hailBody1" rows="3"></textarea></label>
-          <label>PDR Intro Paragraph<textarea name="services.pdrBody1" rows="3"></textarea></label>
-          <label>Insurance Intro Paragraph<textarea name="services.insuranceBody1" rows="3"></textarea></label>
-        </fieldset>
-
-        <fieldset>
-          <legend>FAQ</legend>
-          <label>Hero Subtitle<textarea name="faq.heroSubtitle" rows="3"></textarea></label>
-        </fieldset>
-
-        <fieldset>
-          <legend>Contact</legend>
-          <label>Hero Subtitle<textarea name="contact.heroSubtitle" rows="3"></textarea></label>
-          <label>Intro Paragraph<textarea name="contact.introBody" rows="3"></textarea></label>
-          <label>Response Time Text<input name="contact.responseTime" type="text"></label>
-        </fieldset>
-      </form>
-
-      <div class="admin-savebar">
-        <button id="saveBtn" class="btn btn-gold">Save Changes</button>
-        <span id="saveStatus"></span>
+      <div class="admin-tabs" role="tablist" aria-label="Dashboard sections" data-tab-group="main">
+        <button class="admin-tab" role="tab" id="tab-requests" aria-controls="panel-requests" type="button">
+          Inspection Requests <span class="admin-count" id="requestCount" hidden></span>
+        </button>
+        <button class="admin-tab" role="tab" id="tab-content" aria-controls="panel-content" type="button">Site Content</button>
       </div>
 
-      <section class="admin-submissions" id="submissionsPanel">
+      <div id="panel-requests" role="tabpanel" aria-labelledby="tab-requests" class="admin-tabpanel">
         <div class="admin-topbar">
-          <div>
-            <h2>Inspection Requests</h2>
-            <p class="admin-note">Requests submitted through the contact form, newest first. Photos are shown when the customer added them.</p>
-          </div>
+          <p class="admin-note">Requests from the contact form, newest first. Tap a request to open it.</p>
           <button id="refreshSubmissionsBtn" class="btn btn-outline-navy" type="button">Refresh</button>
         </div>
         <p id="submissionStatus" class="admin-note"></p>
         <div id="submissionList" class="submission-list"></div>
-      </section>
+      </div>
+
+      <div id="panel-content" role="tabpanel" aria-labelledby="tab-content" class="admin-tabpanel">
+        <div class="admin-subtabs" role="tablist" aria-label="Site content pages" data-tab-group="content">
+          <button class="admin-subtab" role="tab" id="sub-common" aria-controls="sec-common" type="button">Common</button>
+          <button class="admin-subtab" role="tab" id="sub-home" aria-controls="sec-home" type="button">Home</button>
+          <button class="admin-subtab" role="tab" id="sub-services" aria-controls="sec-services" type="button">Services</button>
+          <button class="admin-subtab" role="tab" id="sub-faq" aria-controls="sec-faq" type="button">FAQ</button>
+          <button class="admin-subtab" role="tab" id="sub-contact" aria-controls="sec-contact" type="button">Contact</button>
+        </div>
+
+        <form id="contentForm" class="admin-grid">
+          <fieldset id="sec-common" role="tabpanel" aria-labelledby="sub-common">
+            <legend>Common</legend>
+            <label>Business Name<input name="common.businessName" type="text"></label>
+            <label>Owner Label<input name="common.ownerLabel" type="text" placeholder="Aaron Dove - Owner / Estimator"></label>
+            <label>Phone Display<input name="common.phoneDisplay" type="text" placeholder="806-438-8209"></label>
+            <label>Email<input name="common.email" type="email"></label>
+            <label>Nav Book Button<input name="common.navBookLabel" type="text"></label>
+            <label>Footer Tagline<textarea name="common.footerTagline" rows="3"></textarea></label>
+          </fieldset>
+
+          <fieldset id="sec-home" role="tabpanel" aria-labelledby="sub-home">
+            <legend>Home</legend>
+            <label>Hero Badge<input name="home.heroBadge" type="text"></label>
+            <label>Hero Title Top<input name="home.heroTitleTop" type="text"></label>
+            <label>Hero Title Accent<input name="home.heroTitleAccent" type="text"></label>
+            <label>Hero Subtitle<textarea name="home.heroSubtitle" rows="3"></textarea></label>
+            <label>Hero Primary CTA<input name="home.heroPrimaryCta" type="text"></label>
+            <label>Hero Secondary CTA<input name="home.heroSecondaryCta" type="text"></label>
+            <label>Service 1 Title<input name="home.service1Title" type="text"></label>
+            <label>Service 1 Body<textarea name="home.service1Body" rows="3"></textarea></label>
+            <label>Service 2 Title<input name="home.service2Title" type="text"></label>
+            <label>Service 2 Body<textarea name="home.service2Body" rows="3"></textarea></label>
+            <label>Service 3 Title<input name="home.service3Title" type="text"></label>
+            <label>Service 3 Body<textarea name="home.service3Body" rows="3"></textarea></label>
+            <label>CTA Title<input name="home.ctaTitle" type="text"></label>
+            <label>CTA Body<textarea name="home.ctaBody" rows="3"></textarea></label>
+            <label>CTA Primary<input name="home.ctaPrimary" type="text"></label>
+            <label>CTA Secondary<input name="home.ctaSecondary" type="text"></label>
+          </fieldset>
+
+          <fieldset id="sec-services" role="tabpanel" aria-labelledby="sub-services">
+            <legend>Services</legend>
+            <label>Hero Subtitle<textarea name="services.heroSubtitle" rows="3"></textarea></label>
+            <label>Hail Intro Paragraph<textarea name="services.hailBody1" rows="3"></textarea></label>
+            <label>PDR Intro Paragraph<textarea name="services.pdrBody1" rows="3"></textarea></label>
+            <label>Insurance Intro Paragraph<textarea name="services.insuranceBody1" rows="3"></textarea></label>
+          </fieldset>
+
+          <fieldset id="sec-faq" role="tabpanel" aria-labelledby="sub-faq">
+            <legend>FAQ</legend>
+            <label>Hero Subtitle<textarea name="faq.heroSubtitle" rows="3"></textarea></label>
+          </fieldset>
+
+          <fieldset id="sec-contact" role="tabpanel" aria-labelledby="sub-contact">
+            <legend>Contact</legend>
+            <label>Hero Subtitle<textarea name="contact.heroSubtitle" rows="3"></textarea></label>
+            <label>Intro Paragraph<textarea name="contact.introBody" rows="3"></textarea></label>
+            <label>Response Time Text<input name="contact.responseTime" type="text"></label>
+          </fieldset>
+        </form>
+
+        <div class="admin-savebar">
+          <button id="saveBtn" class="btn btn-gold">Save Changes</button>
+          <span id="saveStatus"></span>
+        </div>
+      </div>
     </section>
   </main>
 
