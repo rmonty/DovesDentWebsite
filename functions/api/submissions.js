@@ -1,5 +1,5 @@
 /**
- * GET /api/submissions
+ * GET /api/submissions (and admin POST actions, see onRequestPost)
  *
  * Returns recent inspection requests for the owner dashboard. Requires a
  * Firebase ID token in "Authorization: Bearer <token>" belonging to an email
@@ -11,28 +11,115 @@
 
 const JWKS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
 
+const SUBMISSION_ID_PATTERN = /^\d{4}-\d{2}-\d{2}T[\d:.]+Z-[0-9a-f-]{36}$/;
+const IMAGE_KEY_PATTERN = /^estimates\/\d{4}-\d{2}-\d{2}\/[0-9a-f-]{36}\.(jpg|png|webp|heic|heif)$/;
+// Uploads newer than this are never treated as orphans (the form may still be submitting).
+const ORPHAN_MIN_AGE_MS = 24 * 60 * 60 * 1000;
+
+/** Returns an error Response if the caller is not a signed-in admin, otherwise null. */
+async function requireAdmin(request, env) {
+  if (!env.SUBMISSIONS) {
+    return json({ ok: false, error: "Submissions storage is not configured." }, 500);
+  }
+
+  const token = bearerToken(request);
+  if (!token) return json({ ok: false, error: "Sign in required." }, 401);
+
+  const claims = await verifyFirebaseToken(token, env);
+  if (!claims) return json({ ok: false, error: "Invalid or expired session." }, 401);
+
+  const admins = adminEmails(env);
+  if (admins.length === 0) {
+    return json({ ok: false, error: "ADMIN_EMAILS is not configured." }, 500);
+  }
+  const email = String(claims.email || "").toLowerCase();
+  if (!admins.includes(email)) {
+    return json({ ok: false, error: "This account is not authorized." }, 403);
+  }
+  return null;
+}
+
+/**
+ * POST /api/submissions  (admin only)
+ *   { "action": "delete", "id": "<submission id>" }  removes a request and its photos
+ *   { "action": "cleanup" }                          removes photos no request refers to
+ */
+export async function onRequestPost(context) {
+  const { request, env } = context;
+
+  try {
+    const denied = await requireAdmin(request, env);
+    if (denied) return denied;
+
+    const body = await request.json().catch(() => ({}));
+
+    if (body.action === "delete") {
+      const id = String(body.id || "");
+      if (!SUBMISSION_ID_PATTERN.test(id)) return json({ ok: false, error: "Invalid request id." }, 400);
+
+      const key = `submissions/${id}`;
+      const record = await env.SUBMISSIONS.get(key, "json");
+      if (!record) return json({ ok: false, error: "Request not found." }, 404);
+
+      let photosDeleted = 0;
+      if (env.UPLOADS && Array.isArray(record.imageKeys)) {
+        const keys = record.imageKeys.filter((k) => typeof k === "string" && IMAGE_KEY_PATTERN.test(k));
+        if (keys.length > 0) {
+          await env.UPLOADS.delete(keys);
+          photosDeleted = keys.length;
+        }
+      }
+      await env.SUBMISSIONS.delete(key);
+      return json({ ok: true, photosDeleted });
+    }
+
+    if (body.action === "cleanup") {
+      if (!env.UPLOADS) return json({ ok: false, error: "Photo storage is not configured." }, 500);
+
+      const referenced = new Set();
+      let kvCursor;
+      do {
+        const page = await env.SUBMISSIONS.list({ prefix: "submissions/", cursor: kvCursor });
+        for (const item of page.keys) {
+          const record = await env.SUBMISSIONS.get(item.name, "json");
+          if (record && Array.isArray(record.imageKeys)) record.imageKeys.forEach((k) => referenced.add(k));
+        }
+        kvCursor = page.list_complete ? undefined : page.cursor;
+      } while (kvCursor);
+
+      const cutoff = Date.now() - ORPHAN_MIN_AGE_MS;
+      let deleted = 0;
+      let bytes = 0;
+      let kept = 0;
+      let r2Cursor;
+      do {
+        const page = await env.UPLOADS.list({ prefix: "estimates/", cursor: r2Cursor });
+        const orphans = page.objects.filter((o) => !referenced.has(o.key) && new Date(o.uploaded).getTime() < cutoff);
+        kept += page.objects.length - orphans.length;
+        if (orphans.length > 0) {
+          await env.UPLOADS.delete(orphans.map((o) => o.key));
+          deleted += orphans.length;
+          bytes += orphans.reduce((sum, o) => sum + o.size, 0);
+        }
+        r2Cursor = page.truncated ? page.cursor : undefined;
+      } while (r2Cursor);
+
+      return json({ ok: true, deleted, bytes, kept });
+    }
+
+    return json({ ok: false, error: "Unknown action." }, 400);
+  } catch (error) {
+    console.error("submissions action failed", error);
+    return json({ ok: false, error: "Unexpected server error." }, 500);
+  }
+}
+
 export async function onRequestGet(context) {
   const { request, env } = context;
 
   try {
-    if (!env.SUBMISSIONS) {
-      return json({ ok: false, error: "Submissions storage is not configured." }, 500);
-    }
-
-    const token = bearerToken(request);
-    if (!token) return json({ ok: false, error: "Sign in required." }, 401);
-
-    const claims = await verifyFirebaseToken(token, env);
-    if (!claims) return json({ ok: false, error: "Invalid or expired session." }, 401);
-
-    const admins = adminEmails(env);
-    if (admins.length === 0) {
-      return json({ ok: false, error: "ADMIN_EMAILS is not configured." }, 500);
-    }
-    const email = String(claims.email || "").toLowerCase();
-    if (!admins.includes(email)) {
-      return json({ ok: false, error: "This account is not authorized." }, 403);
-    }
+    const denied = await requireAdmin(request, env);
+    if (denied) return denied;
 
     const list = await env.SUBMISSIONS.list({ prefix: "submissions/", limit: 100 });
     const keys = list.keys.map((k) => k.name).sort().reverse();
@@ -55,7 +142,7 @@ async function decorate(record, env) {
   const imageKeys = Array.isArray(record.imageKeys) ? record.imageKeys : [];
   const images = [];
   for (const key of imageKeys) {
-    if (!/^estimates\/\d{4}-\d{2}-\d{2}\/[0-9a-f-]{36}\.(jpg|png|webp|heic|heif)$/.test(key)) continue;
+    if (!IMAGE_KEY_PATTERN.test(key)) continue;
     if (!env.IMAGE_SIGNING_KEY) break;
     const exp = Math.floor(Date.now() / 1000) + parsePositiveInt(env.IMAGE_LINK_TTL_SECONDS, 30 * 24 * 60 * 60);
     const sig = await hmacHex(env.IMAGE_SIGNING_KEY, `${key}\n${exp}`);

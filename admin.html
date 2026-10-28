@@ -42,7 +42,10 @@
       <div id="panel-requests" role="tabpanel" aria-labelledby="tab-requests" class="admin-tabpanel">
         <div class="admin-topbar">
           <p class="admin-note">Requests from the contact form, newest first. Tap a request to open it.</p>
-          <button id="refreshSubmissionsBtn" class="btn btn-outline-navy" type="button">Refresh</button>
+          <div class="admin-actions">
+            <button id="cleanupPhotosBtn" class="btn btn-outline-navy" type="button" title="Delete uploaded photos that no request refers to">Clean Up Photos</button>
+            <button id="refreshSubmissionsBtn" class="btn btn-outline-navy" type="button">Refresh</button>
+          </div>
         </div>
         <p id="submissionStatus" class="admin-note"></p>
         <div id="submissionList" class="submission-list"></div>

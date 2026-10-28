@@ -20,6 +20,7 @@ const form = document.getElementById("contentForm");
 const submissionList = document.getElementById("submissionList");
 const submissionStatus = document.getElementById("submissionStatus");
 const refreshSubmissionsBtn = document.getElementById("refreshSubmissionsBtn");
+const cleanupPhotosBtn = document.getElementById("cleanupPhotosBtn");
 
 const requestCount = document.getElementById("requestCount");
 
@@ -280,6 +281,9 @@ function renderSubmissions(submissions) {
         </dl>
         ${item.notes ? `<p class="submission-notes">${escapeHtml(item.notes)}</p>` : ""}
         ${photos ? `<div class="submission-photos">${photos}</div>` : ""}
+        <div class="submission-actions">
+          <button type="button" class="btn-delete" data-delete-id="${escapeHtml(item.id)}" data-delete-name="${escapeHtml(item.name || "this request")}">Delete request${photoCount ? " &amp; photos" : ""}</button>
+        </div>
       </details>`;
     })
     .join("");
@@ -316,6 +320,70 @@ async function loadSubmissions() {
 
 if (refreshSubmissionsBtn) {
   refreshSubmissionsBtn.addEventListener("click", () => loadSubmissions());
+}
+
+function setSubmissionStatus(message, isError = false) {
+  if (!submissionStatus) return;
+  submissionStatus.style.color = isError ? "#b91c1c" : "";
+  submissionStatus.textContent = message;
+}
+
+async function submissionAction(payload) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Sign in required.");
+  const token = await user.getIdToken();
+  const response = await fetch("/api/submissions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data.ok) throw new Error(data.error || "Request failed.");
+  return data;
+}
+
+if (submissionList) {
+  submissionList.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-delete-id]");
+    if (!button) return;
+
+    const name = button.dataset.deleteName;
+    if (!window.confirm(`Permanently delete the request from ${name}, including any photos? This cannot be undone.`)) return;
+
+    button.disabled = true;
+    try {
+      const result = await submissionAction({ action: "delete", id: button.dataset.deleteId });
+      await loadSubmissions();
+      setSubmissionStatus(
+        `Deleted request from ${name}${result.photosDeleted ? ` and ${result.photosDeleted} photo(s)` : ""}.`
+      );
+    } catch (err) {
+      button.disabled = false;
+      setSubmissionStatus(err.message || "Could not delete the request.", true);
+    }
+  });
+}
+
+if (cleanupPhotosBtn) {
+  cleanupPhotosBtn.addEventListener("click", async () => {
+    if (!window.confirm("Delete uploaded photos that don't belong to any request (for example, from forms that were never submitted)? Photos on existing requests are kept.")) return;
+
+    cleanupPhotosBtn.disabled = true;
+    setSubmissionStatus("Cleaning up photo storage...");
+    try {
+      const result = await submissionAction({ action: "cleanup" });
+      const mb = (result.bytes / (1024 * 1024)).toFixed(1);
+      setSubmissionStatus(
+        result.deleted
+          ? `Removed ${result.deleted} unused photo(s), freeing ${mb} MB. ${result.kept} photo(s) kept.`
+          : `Nothing to clean up. ${result.kept} photo(s) in use or recently uploaded.`
+      );
+    } catch (err) {
+      setSubmissionStatus(err.message || "Cleanup failed.", true);
+    } finally {
+      cleanupPhotosBtn.disabled = false;
+    }
+  });
 }
 
 function populateForm(data) {
