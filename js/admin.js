@@ -89,8 +89,104 @@ const defaults = {
     heroSubtitle: "Call or text Aaron directly, or fill out the form below.",
     introBody: "The fastest way to get started is to call or text Aaron directly.",
     responseTime: "We reply within 1 hour during business hours"
-  }
+  },
+  reviews: [
+    {
+      text: "Aaron came out the same day and had my truck looking brand new. The hail damage was everywhere and now you cannot tell it ever happened. Incredible work at a fair price.",
+      name: "Mike T.",
+      location: "Local Customer",
+      stars: 5
+    },
+    {
+      text: "I had no idea how to file a hail claim and Aaron walked me through the whole process. He dealt with my insurance company directly. I only paid my deductible. Highly recommend!",
+      name: "Sandra R.",
+      location: "Local Customer",
+      stars: 5
+    },
+    {
+      text: "Professional, fast, and honest. Got a free inspection the next morning and my car was fixed that afternoon. The repair is perfect — no paint, no filler, just like factory.",
+      name: "James K.",
+      location: "Local Customer",
+      stars: 5
+    }
+  ]
 };
+
+// ── Customer reviews editor ──
+const reviewList = document.getElementById("reviewList");
+const addReviewBtn = document.getElementById("addReviewBtn");
+let reviews = [];
+
+function renderReviews() {
+  if (!reviewList) return;
+  if (reviews.length === 0) {
+    reviewList.innerHTML = '<p class="submission-empty">No reviews. The reviews section is hidden on the home page.</p>';
+    return;
+  }
+
+  reviewList.innerHTML = reviews
+    .map(
+      (review, i) => `<div class="review-editor" data-index="${i}">
+        <div class="review-editor-head">
+          <strong>Review ${i + 1}</strong>
+          <span class="review-editor-actions">
+            <button type="button" data-action="up" ${i === 0 ? "disabled" : ""} aria-label="Move up">&uarr;</button>
+            <button type="button" data-action="down" ${i === reviews.length - 1 ? "disabled" : ""} aria-label="Move down">&darr;</button>
+            <button type="button" data-action="remove" class="danger">Remove</button>
+          </span>
+        </div>
+        <label>Customer Name<input data-field="name" type="text" value="${escapeHtml(review.name)}"></label>
+        <label>Label (e.g. Local Customer)<input data-field="location" type="text" value="${escapeHtml(review.location)}"></label>
+        <label>Stars
+          <select data-field="stars">
+            ${[5, 4, 3, 2, 1].map((n) => `<option value="${n}"${Number(review.stars) === n ? " selected" : ""}>${n}</option>`).join("")}
+          </select>
+        </label>
+        <label>Review<textarea data-field="text" rows="4">${escapeHtml(review.text)}</textarea></label>
+      </div>`
+    )
+    .join("");
+}
+
+if (reviewList) {
+  reviewList.addEventListener("input", (event) => {
+    const field = event.target.dataset.field;
+    const row = event.target.closest(".review-editor");
+    if (!field || !row) return;
+    reviews[Number(row.dataset.index)][field] = event.target.value;
+  });
+
+  reviewList.addEventListener("click", (event) => {
+    const action = event.target.dataset.action;
+    const row = event.target.closest(".review-editor");
+    if (!action || !row) return;
+    const i = Number(row.dataset.index);
+    if (action === "remove") reviews.splice(i, 1);
+    if (action === "up" && i > 0) [reviews[i - 1], reviews[i]] = [reviews[i], reviews[i - 1]];
+    if (action === "down" && i < reviews.length - 1) [reviews[i + 1], reviews[i]] = [reviews[i], reviews[i + 1]];
+    renderReviews();
+  });
+}
+
+if (addReviewBtn) {
+  addReviewBtn.addEventListener("click", () => {
+    reviews.push({ text: "", name: "", location: "Local Customer", stars: 5 });
+    renderReviews();
+    const last = reviewList.querySelector(".review-editor:last-child textarea");
+    if (last) last.focus();
+  });
+}
+
+function collectReviews() {
+  return reviews
+    .map((r) => ({
+      text: String(r.text || "").trim(),
+      name: String(r.name || "").trim(),
+      location: String(r.location || "").trim(),
+      stars: Math.min(5, Math.max(1, Number(r.stars) || 5))
+    }))
+    .filter((r) => r.text);
+}
 
 function deepMerge(base, incoming) {
   const out = { ...base };
@@ -227,6 +323,8 @@ function populateForm(data) {
     const value = getDeep(data, field.name);
     field.value = typeof value === "string" ? value : "";
   });
+  reviews = (Array.isArray(data.reviews) ? data.reviews : []).map((r) => ({ ...r }));
+  renderReviews();
 }
 
 function collectForm() {
@@ -234,6 +332,7 @@ function collectForm() {
   form.querySelectorAll("[name]").forEach((field) => {
     setDeep(data, field.name, field.value.trim());
   });
+  data.reviews = collectReviews();
   return data;
 }
 

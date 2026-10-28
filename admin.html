@@ -52,6 +52,7 @@
         <div class="admin-subtabs" role="tablist" aria-label="Site content pages" data-tab-group="content">
           <button class="admin-subtab" role="tab" id="sub-common" aria-controls="sec-common" type="button">Common</button>
           <button class="admin-subtab" role="tab" id="sub-home" aria-controls="sec-home" type="button">Home</button>
+          <button class="admin-subtab" role="tab" id="sub-reviews" aria-controls="sec-reviews" type="button">Reviews</button>
           <button class="admin-subtab" role="tab" id="sub-services" aria-controls="sec-services" type="button">Services</button>
           <button class="admin-subtab" role="tab" id="sub-faq" aria-controls="sec-faq" type="button">FAQ</button>
           <button class="admin-subtab" role="tab" id="sub-contact" aria-controls="sec-contact" type="button">Contact</button>
@@ -87,6 +88,12 @@
             <label>CTA Primary<input name="home.ctaPrimary" type="text"></label>
             <label>CTA Secondary<input name="home.ctaSecondary" type="text"></label>
           </fieldset>
+
+          <div id="sec-reviews" role="tabpanel" aria-labelledby="sub-reviews" class="admin-reviews">
+            <p class="admin-note">Customer experiences shown in the "What Customers Are Saying" section on the home page. Edit, reorder, add or remove them, then press Save Changes. Removing every review hides the section.</p>
+            <div id="reviewList" class="review-editor-list"></div>
+            <button id="addReviewBtn" class="btn btn-outline-navy" type="button">+ Add Review</button>
+          </div>
 
           <fieldset id="sec-services" role="tabpanel" aria-labelledby="sub-services">
             <legend>Services</legend>

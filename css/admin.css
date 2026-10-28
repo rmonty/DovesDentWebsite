@@ -181,6 +181,79 @@
   box-shadow: 0 0 0 3px rgba(20, 84, 140, 0.2);
 }
 
+/* ── Customer review editor ── */
+
+.admin-reviews {
+  border: 1px solid #dde3ee;
+  border-radius: 12px;
+  padding: 14px;
+  background: #fbfcff;
+}
+
+.review-editor-list {
+  display: grid;
+  gap: 14px;
+  margin: 14px 0;
+}
+
+.review-editor {
+  border: 1px solid #dde3ee;
+  border-radius: 12px;
+  background: #fff;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  column-gap: 16px;
+}
+
+.review-editor-head {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  color: #002050;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.review-editor-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.review-editor-actions button {
+  border: 1px solid #cfd7e6;
+  background: #fff;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.review-editor-actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.review-editor-actions .danger {
+  color: #b91c1c;
+  border-color: #f0b4b4;
+}
+
+.review-editor label:last-child {
+  grid-column: 1 / -1;
+}
+
+.admin-grid select {
+  width: 100%;
+  margin-top: 6px;
+  border: 1px solid #cfd7e6;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  background: #fff;
+}
+
 .admin-savebar {
   position: sticky;
   bottom: 14px;

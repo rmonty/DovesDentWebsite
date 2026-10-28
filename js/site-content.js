@@ -83,6 +83,41 @@ function applyHome(home = {}) {
   setText(".cta-actions .btn-outline-white", home.ctaSecondary);
 }
 
+function applyReviews(reviews) {
+  if (!Array.isArray(reviews)) return;
+
+  const section = document.getElementById("reviews");
+  const grid = document.querySelector(".reviews-grid");
+  if (!section || !grid) return;
+
+  if (reviews.length === 0) {
+    section.hidden = true;
+    return;
+  }
+
+  const make = (tag, className, text) => {
+    const el = document.createElement(tag);
+    el.className = className;
+    el.textContent = text;
+    return el;
+  };
+
+  grid.replaceChildren(
+    ...reviews.map((review) => {
+      const stars = Math.min(5, Math.max(1, Number(review.stars) || 5));
+      const card = document.createElement("div");
+      card.className = "review-card";
+      card.append(
+        make("div", "review-stars", "★".repeat(stars)),
+        make("p", "review-text", `"${review.text || ""}"`),
+        make("div", "reviewer-name", review.name || ""),
+        make("div", "reviewer-loc", review.location || "")
+      );
+      return card;
+    })
+  );
+}
+
 function applyServices(services = {}) {
   setText(".page-hero .sub", services.heroSubtitle);
   setText("#hail .sd-text p:nth-of-type(1)", services.hailBody1);
@@ -121,7 +156,10 @@ async function loadAndApply() {
     applyCommon(data.common || {});
 
     const page = getPageId();
-    if (page === "home") applyHome(data.home || {});
+    if (page === "home") {
+      applyHome(data.home || {});
+      applyReviews(data.reviews);
+    }
     if (page === "services") applyServices(data.services || {});
     if (page === "faq") applyFaq(data.faq || {});
     if (page === "contact") applyContact(data.contact || {});
